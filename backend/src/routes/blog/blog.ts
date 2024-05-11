@@ -34,11 +34,14 @@ blogRout.use('/*', async (c, next) => {
 
 blogRout.post('/', async (c) => {
   const userId = c.get('userId')
-
+  console.log(userId);
+  
   const body = await c.req.json();
+
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
+
     try {
       const res = await prisma.post.create({
         data: {
@@ -74,6 +77,9 @@ blogRout.put('/', async(c) => {
           content: body.content,
         }
       })
+      return c.json({
+        "message": "updated"
+      })
     } catch (error) {
       console.log(error);
       
@@ -81,9 +87,24 @@ blogRout.put('/', async(c) => {
     }
 })
 
-blogRout.get('/:id', (c) => {
+blogRout.get('/:id', async (c) => {
 	const id = c.req.param('id')
-	console.log(id);
-	return c.text('get blog route')
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+  
+  try {
+    const res = await prisma.post.findUnique({
+      where: {
+        id: id
+      }
+    }) 
+
+    return c.json(res);
+  } catch (error) {
+    console.log(error);
+    
+    return c.text(JSON.stringify(error));
+  }
 })
 export default blogRout

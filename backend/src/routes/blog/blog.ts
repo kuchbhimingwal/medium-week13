@@ -87,7 +87,7 @@ blogRout.put('/', async(c) => {
     }
 })
 
-blogRout.get('/:id', async (c) => {
+blogRout.get('/post/:id', async (c) => {
 	const id = c.req.param('id')
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
@@ -107,4 +107,22 @@ blogRout.get('/:id', async (c) => {
     return c.text(JSON.stringify(error));
   }
 })
+
+blogRout.get('/bulk', async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+	try {
+    const res = await prisma.post.findMany();
+
+    console.log("adae"); 
+    return c.json(res);
+  } catch (error) {
+
+      console.log(error);
+      return c.text(JSON.stringify(error));
+    }
+})
+
 export default blogRout

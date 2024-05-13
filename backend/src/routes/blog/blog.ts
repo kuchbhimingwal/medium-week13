@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
-import { decode, sign, verify } from 'hono/jwt'
-
+import { verify } from 'hono/jwt'
+import { createBlogInput, updateBlogInput } from '@kuchbhimingwal/medium-common'
 const blogRout = new Hono<{
   Bindings: {
 		DATABASE_URL: string,
@@ -37,7 +37,13 @@ blogRout.post('/', async (c) => {
   console.log(userId);
   
   const body = await c.req.json();
-
+  const { success } = createBlogInput.safeParse(body);
+  if(!success){ 
+    c.status(403)
+    return c.json({
+      "message": "enter a valid input"
+    })
+  }
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
@@ -65,7 +71,14 @@ blogRout.put('/', async(c) => {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
-  
+
+    const { success } = updateBlogInput.safeParse(body);
+    if(!success){ 
+      c.status(403)
+      return c.json({
+        "message": "enter a valid input"
+      })
+    }
     try {
       await prisma.post.update({
         where: {
